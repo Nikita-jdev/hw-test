@@ -10,7 +10,6 @@ import (
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(str string) (string, error) {
-
 	if utf8.RuneCountInString(str) == 0 {
 		return "", nil
 	}
