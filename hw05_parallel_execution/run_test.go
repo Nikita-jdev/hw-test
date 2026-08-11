@@ -67,4 +67,37 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+
+	t.Run("m <= 0 много ошибок", func(t *testing.T) {
+		tasks := make([]Task, 0, 10)
+		for i := 0; i < 10; i++ {
+			tasks = append(tasks, func() error { return nil })
+		}
+
+		err := Run(tasks, 5, 0)
+		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "expected ErrErrorsLimitExceeded, got %v", err)
+
+		err = Run(tasks, 5, -1)
+		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "expected ErrErrorsLimitExceeded, got %v", err)
+	})
+
+	t.Run("пустой список", func(t *testing.T) {
+		tasks := make([]Task, 0)
+		err := Run(tasks, 5, 1)
+		require.NoError(t, err)
+	})
+
+	t.Run("без ошибок", func(t *testing.T) {
+		var executed bool
+		tasks := []Task{
+			func() error {
+				executed = true
+				return nil
+			},
+		}
+
+		err := Run(tasks, 1, 1)
+		require.NoError(t, err)
+		require.True(t, executed, "task was not executed")
+	})
 }
