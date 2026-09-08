@@ -64,10 +64,6 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'calendar')
     steps:
-      - name: Check Go version
-        run: go version
-        working-directory: hw12_13_14_15_16_calendar
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -75,6 +71,10 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v3
+
+      - name: Check Go version
+        run: go version
+        working-directory: hw12_13_14_15_16_calendar
 
       - name: make lint
         run: make lint
