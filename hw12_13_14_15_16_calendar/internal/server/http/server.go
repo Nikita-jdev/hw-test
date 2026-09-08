@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -19,8 +20,7 @@ type Logger interface {
 	Info(msg string)
 }
 
-type Application interface { // TODO
-}
+type Application interface{}
 
 func NewServer(logger Logger, app Application, host, port string) *Server {
 	return &Server{
@@ -36,8 +36,9 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.HandleFunc("/", s.hello)
 
 	s.httpServer = &http.Server{
-		Addr:    net.JoinHostPort(s.host, s.port),
-		Handler: loggingMiddleware(mux, s.logger),
+		Addr:              net.JoinHostPort(s.host, s.port),
+		Handler:           loggingMiddleware(mux, s.logger),
+		ReadHeaderTimeout: 10 * time.Second, // защита от Slowloris (G112)
 	}
 
 	errCh := make(chan error, 1)

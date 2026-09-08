@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
-
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
+	_ "github.com/jackc/pgx/v4/stdlib" // Регистрация драйвера PostgreSQL "pgx" для database/sql.
 )
 
 type Storage struct {
@@ -41,7 +40,6 @@ func (s *Storage) CreateEvent(ctx context.Context, event storage.Event) error {
 	_, err := s.db.ExecContext(ctx,
 		`INSERT INTO events (id, title, start_at, duration, user_id) VALUES ($1, $2, $3, $4, $5)`,
 		event.ID, event.Title, event.StartAt, event.Duration, event.UserID)
-
 	if err != nil {
 		s.logger.Error("создание события: " + err.Error())
 		return err
@@ -54,7 +52,6 @@ func (s *Storage) UpdateEvent(ctx context.Context, id int64, event storage.Event
 	res, err := s.db.ExecContext(ctx,
 		`UPDATE events SET title = $1, start_at = $2, duration = $3, user_id = $4 WHERE id = $5`,
 		event.Title, event.StartAt, event.Duration, event.UserID, id)
-
 	if err != nil {
 		s.logger.Error("обновление события: " + err.Error())
 		return err
@@ -70,7 +67,6 @@ func (s *Storage) UpdateEvent(ctx context.Context, id int64, event storage.Event
 
 func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
 	res, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE id = $1`, id)
-
 	if err != nil {
 		s.logger.Error("удаление события: " + err.Error())
 		return err
@@ -86,7 +82,6 @@ func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
 
 func (s *Storage) ListEvents(ctx context.Context) ([]storage.Event, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT id, title, start_at, duration, user_id FROM events`)
-
 	if err != nil {
 		s.logger.Error("получение списка событий: " + err.Error())
 		return nil, err
