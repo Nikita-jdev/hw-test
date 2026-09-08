@@ -2,30 +2,67 @@ package internalhttp
 
 import (
 	"context"
+	"errors"
+	"net"
+	"net/http"
 )
 
-type Server struct { // TODO
+type Server struct {
+	httpServer *http.Server
+	host       string
+	port       string
+	logger     Logger
+	app        Application
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Info(msg string)
 }
 
 type Application interface { // TODO
 }
 
-func NewServer(logger Logger, app Application) *Server {
-	return &Server{}
+func NewServer(logger Logger, app Application, host, port string) *Server {
+	return &Server{
+		host:   host,
+		port:   port,
+		logger: logger,
+		app:    app,
+	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	// TODO
-	<-ctx.Done()
-	return nil
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.hello)
+
+	s.httpServer = &http.Server{
+		Addr:    net.JoinHostPort(s.host, s.port),
+		Handler: loggingMiddleware(mux, s.logger),
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- s.httpServer.ListenAndServe()
+	}()
+
+	select {
+	case <-ctx.Done():
+		return s.Stop(ctx)
+	case err := <-errCh:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return err
+	}
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	// TODO
-	return nil
+	if s.httpServer == nil {
+		return nil
+	}
+	return s.httpServer.Shutdown(ctx)
 }
 
-// TODO
+func (s *Server) hello(w http.ResponseWriter, _ *http.Request) {
+	_, _ = w.Write([]byte("hello-world"))
+}

@@ -9,9 +9,12 @@ import (
 	"time"
 
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/app"
+	interputConfig "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/config"
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/server/http"
+	internalHttp "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/server/http"
+	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
 	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage/memory"
+	sqlstorage "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage/sql"
 )
 
 var configFile string
@@ -28,13 +31,30 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
+	config, err := interputConfig.NewConfig(configFile)
+	if err != nil {
+		panic(err)
+	}
+
 	logg := logger.New(config.Logger.Level)
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	var store storage.Storage
+	switch config.Storage.Type {
+	case "sql":
+		s, err := sqlstorage.New(config.Storage.DSN, logg)
+		if err != nil {
+			logg.Error("подключение к БД: " + err.Error())
+			os.Exit(1)
+		}
+		defer func(s *sqlstorage.Storage) { _ = s.Close() }(s)
+		store = s
+	default: // "memory"
+		store = memorystorage.New()
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
+	calendar := app.New(logg, store)
+
+	server := internalHttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -56,6 +76,6 @@ func main() {
 	if err := server.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
 		cancel()
-		os.Exit(1) //nolint:gocritic
+		os.Exit(1)
 	}
 }

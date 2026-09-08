@@ -1,5 +1,10 @@
 [logger]
 level = "INFO"
 
-# TODO
-# ...
+[http]
+host = "127.0.0.1"
+port = "8080"
+
+[storage]
+type = "memory" # memory или sql
+dsn = ""
