@@ -2,7 +2,6 @@ run:
   tests: true
   build-tags:
     - bench
-    - !bench
 
 linters-settings:
   funlen:
@@ -14,6 +13,11 @@ linters-settings:
         allow:
           - $gostd
           - github.com/stretchr/testify/require
+          - github.com/BurntSushi/toml
+          - github.com/jackc/pgx/v4/stdlib
+          - github.com/fixme_my_friend/hw12_13_14_15_16_calendar
+          - github.com/go-chi/chi/v5
+          - github.com/oapi-codegen/runtime
 
 issues:
   exclude-rules:
@@ -40,7 +44,6 @@ linters:
     - gci
     - gocognit
     - goconst
-    - gocritic
     - gocyclo
     - godot
     - gofmt

@@ -2,25 +2,35 @@ package app
 
 import (
 	"context"
+
+	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
 )
 
-type App struct { // TODO
+type App struct {
+	logger  Logger
+	storage storage.Storage
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Info(msg string)
 }
 
-type Storage interface { // TODO
+func New(logger Logger, storage storage.Storage) *App {
+	return &App{logger: logger, storage: storage}
 }
 
-func New(logger Logger, storage Storage) *App {
-	return &App{}
+func (a *App) CreateEvent(ctx context.Context, event storage.Event) error {
+	return a.storage.CreateEvent(ctx, event)
 }
 
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+func (a *App) UpdateEvent(ctx context.Context, id int64, event storage.Event) error {
+	return a.storage.UpdateEvent(ctx, id, event)
 }
 
-// TODO
+func (a *App) DeleteEvent(ctx context.Context, id int64) error {
+	return a.storage.DeleteEvent(ctx, id)
+}
+
+func (a *App) ListEvents(ctx context.Context) ([]storage.Event, error) {
+	return a.storage.ListEvents(ctx)
+}
