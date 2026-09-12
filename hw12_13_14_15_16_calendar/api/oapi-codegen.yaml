@@ -1,0 +1,5 @@
+package: internalhttp
+generate:
+  chi-server: true
+  models: true
+output: internal/server/http/api.gen.go

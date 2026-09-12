@@ -6,14 +6,20 @@ import (
 )
 
 type Event struct {
-	ID       int64
-	Title    string
-	StartAt  time.Time     // дата и время события
+	ID int64
+
+	Title string
+
+	StartAt time.Time // дата и время события
+
 	Duration time.Duration // длительность события
-	UserID   int64         // ID владельца события
+
+	UserID int64 // ID владельца события
+
 }
 
 var (
-	ErrDateBusy      = errors.New("данное время уже занято другим событием")
+	ErrDateBusy = errors.New("данное время уже занято другим событием")
+
 	ErrEventNotFound = errors.New("событие не найдено")
 )
