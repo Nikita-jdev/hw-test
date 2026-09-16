@@ -20,8 +20,6 @@ type Logger interface {
 	Info(msg string)
 }
 
-type Application interface{}
-
 func NewServer(logger Logger, app Application, host, port string) *Server {
 	return &Server{
 		host:   host,
@@ -32,12 +30,12 @@ func NewServer(logger Logger, app Application, host, port string) *Server {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", s.hello)
+	handlers := NewHandlers(s.app)
+	router := Handler(handlers)
 
 	s.httpServer = &http.Server{
 		Addr:              net.JoinHostPort(s.host, s.port),
-		Handler:           loggingMiddleware(mux, s.logger),
+		Handler:           loggingMiddleware(router, s.logger),
 		ReadHeaderTimeout: 10 * time.Second, // защита от Slowloris (G112)
 	}
 
@@ -62,8 +60,4 @@ func (s *Server) Stop(ctx context.Context) error {
 		return nil
 	}
 	return s.httpServer.Shutdown(ctx)
-}
-
-func (s *Server) hello(w http.ResponseWriter, _ *http.Request) {
-	_, _ = w.Write([]byte("hello-world"))
 }
