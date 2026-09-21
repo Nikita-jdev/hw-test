@@ -13,3 +13,22 @@
 - `hw16_calendar` (от `hw15_calendar`) -> Merge Request в `hw15_calendar` (если уже вмержена, то в `master`)
 
 **Домашнее задание не принимается, если не принято ДЗ, предшедствующее ему.**
+
+
+
+# 1. Инфраструктура
+cd deployments; docker-compose up -d
+
+# 2. Сборка (make не нужен, если нет — go build)
+go build -o bin\calendar.exe ./cmd/calendar
+
+go build -o bin\calendar_scheduler.exe ./cmd/scheduler
+
+go build -o bin\calendar_storer.exe ./cmd/storer
+
+# 3. Сервисы (3 терминала)
+.\bin\calendar.exe -config .\configs\config.toml
+
+.\bin\calendar_scheduler.exe -config .\configs\config.toml
+
+.\bin\calendar_storer.exe -config .\configs\config.toml
