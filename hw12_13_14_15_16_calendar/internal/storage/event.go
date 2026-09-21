@@ -16,10 +16,10 @@ type Event struct {
 }
 
 type Notification struct {
-	EventID int64     `json:"event_id"`
+	EventID int64     `json:"eventId"`
 	Title   string    `json:"title"`
 	Date    time.Time `json:"date"`
-	UserID  int64     `json:"user_id"`
+	UserID  int64     `json:"userId"`
 }
 
 var (

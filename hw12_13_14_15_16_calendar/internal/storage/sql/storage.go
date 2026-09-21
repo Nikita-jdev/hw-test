@@ -148,7 +148,8 @@ func scanEvents(rows *sql.Rows) ([]storage.Event, error) {
 	events := make([]storage.Event, 0)
 	for rows.Next() {
 		var event storage.Event
-		if err := rows.Scan(&event.ID, &event.Title, &event.StartAt, &event.Duration, &event.UserID, &event.NotifyBefore, &event.Notified); err != nil {
+		if err := rows.Scan(&event.ID, &event.Title, &event.StartAt, &event.Duration,
+			&event.UserID, &event.NotifyBefore, &event.Notified); err != nil {
 			return nil, err
 		}
 		events = append(events, event)

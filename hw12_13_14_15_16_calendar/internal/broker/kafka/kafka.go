@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/broker"
 )
@@ -23,7 +23,7 @@ type Config struct {
 }
 
 type Producer struct {
-	writer *kafka.Writer
+	writer *kafkago.Writer
 	logger Logger
 }
 
@@ -38,11 +38,11 @@ func NewProducer(cfg Config, logger Logger) (broker.Producer, error) {
 	}
 
 	return &Producer{
-		writer: &kafka.Writer{
-			Addr:                   kafka.TCP(cfg.Brokers...),
+		writer: &kafkago.Writer{
+			Addr:                   kafkago.TCP(cfg.Brokers...),
 			Topic:                  cfg.Topic,
-			Balancer:               &kafka.LeastBytes{},
-			RequiredAcks:           kafka.RequireOne,
+			Balancer:               &kafkago.LeastBytes{},
+			RequiredAcks:           kafkago.RequireOne,
 			AllowAutoTopicCreation: true,
 		},
 		logger: logger,
@@ -53,7 +53,7 @@ func (p *Producer) Send(ctx context.Context, message broker.Message) error {
 	var err error
 
 	for attempt := 1; attempt <= retryMax; attempt++ {
-		err = p.writer.WriteMessages(ctx, kafka.Message{Key: message.Key, Value: message.Value})
+		err = p.writer.WriteMessages(ctx, kafkago.Message{Key: message.Key, Value: message.Value})
 		if err == nil {
 			return nil
 		}
@@ -74,7 +74,7 @@ func (p *Producer) Close() error {
 }
 
 type Consumer struct {
-	reader *kafka.Reader
+	reader *kafkago.Reader
 	logger Logger
 }
 
@@ -87,14 +87,14 @@ func NewConsumer(cfg Config, logger Logger) (broker.Consumer, error) {
 	}
 
 	return &Consumer{
-		reader: kafka.NewReader(kafka.ReaderConfig{
+		reader: kafkago.NewReader(kafkago.ReaderConfig{
 			Brokers:        cfg.Brokers,
 			GroupID:        cfg.GroupID,
 			Topic:          cfg.Topic,
 			MinBytes:       10,   // 10B
 			MaxBytes:       10e6, // 10MB
 			CommitInterval: 0,    // подтверждать вручную через Commit
-			StartOffset:    kafka.LastOffset,
+			StartOffset:    kafkago.LastOffset,
 		}),
 		logger: logger,
 	}, nil
