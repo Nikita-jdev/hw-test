@@ -71,10 +71,10 @@ func main() {
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	logg.Info("календарь запущен")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		logg.Error("запуск сервера: " + err.Error())
 		cancel()
 		os.Exit(1)
 	}
