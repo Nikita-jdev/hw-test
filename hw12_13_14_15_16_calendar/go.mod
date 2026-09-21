@@ -7,7 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/oapi-codegen/runtime v1.1.0
-	github.com/segmentio/kafka-go v0.4.51
+	github.com/segmentio/kafka-go v0.4.47
 )
 
 require (
