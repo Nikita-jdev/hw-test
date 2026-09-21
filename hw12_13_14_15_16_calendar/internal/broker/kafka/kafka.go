@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	kafkago "github.com/segmentio/kafka-go"
-
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/broker"
+	kafkago "github.com/segmentio/kafka-go"
 )
 
 const (
