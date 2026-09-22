@@ -1,0 +1,27 @@
+services:
+  tests:
+    image: golang:1.22
+    working_dir: /app
+    volumes:
+      - ../:/app
+    environment:
+      CALENDAR_URL: http://calendar:8080
+      DB_DSN: postgres://calendar:calendar@postgres:5432/calendar?sslmode=disable
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC: calendar.notifications
+    depends_on:
+      calendar:
+        condition: service_started
+      scheduler:
+        condition: service_started
+      storer:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    command: ["go", "test", "-v", "-count=1", "-tags=integration", "./tests/integration/..."]
