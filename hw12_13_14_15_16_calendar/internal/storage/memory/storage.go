@@ -3,13 +3,15 @@ package memorystorage
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
 )
 
 type Storage struct {
-	mu     sync.RWMutex
-	events map[int64]storage.Event
+	mu            sync.RWMutex
+	events        map[int64]storage.Event
+	notifications []storage.Notification
 }
 
 func New() *Storage {
@@ -66,6 +68,59 @@ func (s *Storage) ListEvents(_ context.Context) ([]storage.Event, error) {
 	}
 
 	return events, nil
+}
+
+func (s *Storage) EventsToNotify(_ context.Context, now time.Time) ([]storage.Event, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	events := make([]storage.Event, 0)
+	for _, event := range s.events {
+		if event.Notified || event.NotifyBefore <= 0 {
+			continue
+		}
+		if !event.StartAt.Add(-event.NotifyBefore).After(now) {
+			events = append(events, event)
+		}
+	}
+
+	return events, nil
+}
+
+func (s *Storage) MarkNotified(_ context.Context, id int64) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	event, ok := s.events[id]
+	if !ok {
+		return storage.ErrEventNotFound
+	}
+
+	event.Notified = true
+	s.events[id] = event
+	return nil
+}
+
+func (s *Storage) DeleteOldEvents(_ context.Context, olderThan time.Time) (countRowsDeleted int64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var deleted int64
+	for id, event := range s.events {
+		if event.StartAt.Before(olderThan) {
+			delete(s.events, id)
+			deleted++
+		}
+	}
+	return deleted, nil
+}
+
+func (s *Storage) SaveNotification(_ context.Context, notification storage.Notification) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.notifications = append(s.notifications, notification)
+	return nil
 }
 
 func (s *Storage) isBusy(event storage.Event, id int64) bool {
