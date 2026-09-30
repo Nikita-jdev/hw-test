@@ -41,6 +41,16 @@ version: build
 test:
 	go test -race ./internal/... ./...
 
+COMPOSE_TEST := docker compose -f docker-compose.yaml -f docker-compose.integration.yaml
+
+integration-tests:
+	cd deployments && \
+	$(COMPOSE_TEST) down -v ; \
+	$(COMPOSE_TEST) up --build --abort-on-container-exit --exit-code-from tests tests ; \
+	status=$$? ; \
+	$(COMPOSE_TEST) down -v ; \
+	exit $$status
+
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.64.8
 
@@ -48,4 +58,10 @@ lint: install-lint-deps
 	go build ./...
 	golangci-lint run ./...
 
-.PHONY: build build-calendar build-scheduler build-storer run run-scheduler run-storer build-img run-img version test lint
+up:
+	cd deployments && docker compose up -d --build
+
+down:
+	cd deployments && docker compose down -v
+
+.PHONY: build build-calendar build-scheduler build-storer run run-scheduler run-storer build-img run-img version test lint up down integration-tests

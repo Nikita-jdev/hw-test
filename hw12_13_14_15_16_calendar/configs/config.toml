@@ -12,8 +12,8 @@ dsn = "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable"
 [kafka]
 brokers = ["localhost:9092"]
 topic = "calendar.notifications"
-group_id = "calendar-storer"
+groupID = "calendar-storer"
 
 [scheduler]
 interval = "30s"   # период сканирования БД
-keep_period = "8760h" # события старше этого срока удаляются
+keepPeriod = "8760h" # события старше этого срока удаляются
