@@ -5,6 +5,8 @@
 - [Домашнее задание №15 «Докеризация и интеграционное тестирование Календаря»](./docs/15_README.md)
 - [Домашнее задание №16 «Мониторинг Календаря»](./docs/16_README.md)
 
+Описание добавленных метрик и инструкции по их использованию: [./docs/16_METRICS.md](./docs/16_METRICS.md).
+
 #### Ветки при выполнении
 - `hw12_calendar` (от `master`) -> Merge Request в `master`
 - `hw13_calendar` (от `hw12_calendar`) -> Merge Request в `hw12_calendar` (если уже вмержена, то в `master`)

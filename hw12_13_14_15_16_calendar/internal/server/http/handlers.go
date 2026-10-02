@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/metrics"
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
 )
 
@@ -47,6 +48,7 @@ func (h *Handlers) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metrics.EventsCreatedTotal.Inc()
 	writeJSON(w, http.StatusCreated, toEvent(event))
 }
 
@@ -70,6 +72,7 @@ func (h *Handlers) UpdateEvent(w http.ResponseWriter, r *http.Request, id int64)
 		return
 	}
 
+	metrics.EventsUpdatedTotal.Inc()
 	writeJSON(w, http.StatusOK, toEvent(event))
 }
 
@@ -79,6 +82,7 @@ func (h *Handlers) DeleteEvent(w http.ResponseWriter, r *http.Request, id int64)
 		return
 	}
 
+	metrics.EventsDeletedTotal.Inc()
 	w.WriteHeader(http.StatusNoContent)
 }
 

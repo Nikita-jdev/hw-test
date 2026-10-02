@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/broker"
+	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/metrics"
 	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage"
 )
 
@@ -43,6 +44,9 @@ func (s *Scheduler) Run(ctx context.Context) {
 	ticker := time.NewTicker(s.interval)
 	defer ticker.Stop()
 
+	metrics.BackgroundTaskUp.WithLabelValues("scheduler").Set(1)
+	defer metrics.BackgroundTaskUp.WithLabelValues("scheduler").Set(0)
+
 	s.notify(ctx)
 	s.cleanup(ctx)
 
@@ -59,8 +63,11 @@ func (s *Scheduler) Run(ctx context.Context) {
 }
 
 func (s *Scheduler) notify(ctx context.Context) {
+	metrics.BackgroundTaskRunsTotal.WithLabelValues("scheduler_notify").Inc()
+
 	events, err := s.storage.EventsToNotify(ctx, time.Now().UTC())
 	if err != nil {
+		metrics.BackgroundTaskErrorsTotal.WithLabelValues("scheduler_notify").Inc()
 		s.logger.Error("планировщик: получение событий для уведомлений: " + err.Error())
 		return
 	}
@@ -85,24 +92,31 @@ func (s *Scheduler) notify(ctx context.Context) {
 		}
 
 		if err := s.producer.Send(ctx, message); err != nil {
+			metrics.NotificationsFailedTotal.Inc()
+			metrics.BackgroundTaskErrorsTotal.WithLabelValues("scheduler_notify").Inc()
 			s.logger.Error("планировщик: отправка уведомления: " + err.Error())
 			continue
 		}
 
 		if err := s.storage.MarkNotified(ctx, event.ID); err != nil {
+			metrics.BackgroundTaskErrorsTotal.WithLabelValues("scheduler_notify").Inc()
 			s.logger.Error("планировщик: отметка события уведомлённым: " + err.Error())
 			continue
 		}
 
+		metrics.NotificationsSentTotal.Inc()
 		s.logger.Info("планировщик: отправлено уведомление о событии " + strconv.FormatInt(event.ID, 10))
 	}
 }
 
 func (s *Scheduler) cleanup(ctx context.Context) {
+	metrics.BackgroundTaskRunsTotal.WithLabelValues("scheduler_cleanup").Inc()
+
 	threshold := time.Now().UTC().Add(-s.keepFor)
 
 	deleted, err := s.storage.DeleteOldEvents(ctx, threshold)
 	if err != nil {
+		metrics.BackgroundTaskErrorsTotal.WithLabelValues("scheduler_cleanup").Inc()
 		s.logger.Error("планировщик: удаление старых событий: " + err.Error())
 		return
 	}
