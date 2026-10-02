@@ -19,6 +19,7 @@ linters-settings:
           - github.com/go-chi/chi/v5
           - github.com/oapi-codegen/runtime
           - github.com/segmentio/kafka-go
+          - github.com/prometheus/client_golang/prometheus
 
 issues:
   exclude-rules:
